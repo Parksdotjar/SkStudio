@@ -378,6 +378,7 @@ function renderCompList(root) {
     const label = form.dataset.label;
     const snippetEl = form.querySelector(".comp-snippet");
     const docEl = form.querySelector(".comp-doc");
+    enableTabIndent(snippetEl);
     form.querySelector(".comp-save").onclick = () => {
       updateCompletion(label, {
         snippet: snippetEl.value,
@@ -472,3 +473,41 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 function escapeAttr(s) { return escapeHtml(s).replace(/"/g, "&quot;"); }
+
+/** Make Tab insert a tab character in a textarea instead of moving focus. */
+function enableTabIndent(textarea) {
+  if (!textarea) return;
+  textarea.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab") return;
+    e.preventDefault();
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const value = textarea.value;
+    const sel = value.slice(start, end);
+
+    if (sel.includes("\n")) {
+      // Multi-line: indent or outdent each line in the selection
+      const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+      const block = value.slice(lineStart, end);
+      const updated = e.shiftKey
+        ? block.split("\n").map((l) => l.replace(/^\t/, "")).join("\n")
+        : block.split("\n").map((l) => "\t" + l).join("\n");
+      textarea.value = value.slice(0, lineStart) + updated + value.slice(end);
+      textarea.selectionStart = lineStart;
+      textarea.selectionEnd = lineStart + updated.length;
+    } else if (e.shiftKey) {
+      // Single-cursor outdent: strip one tab from the start of the current line
+      const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+      if (value[lineStart] === "\t") {
+        textarea.value = value.slice(0, lineStart) + value.slice(lineStart + 1);
+        textarea.selectionStart = textarea.selectionEnd = Math.max(lineStart, start - 1);
+      }
+    } else {
+      // Single-cursor indent: insert a tab
+      textarea.value = value.slice(0, start) + "\t" + value.slice(end);
+      textarea.selectionStart = textarea.selectionEnd = start + 1;
+    }
+    // Trigger an input event so any listeners notice
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+}
