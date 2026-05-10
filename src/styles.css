@@ -888,12 +888,13 @@ button {
 /* === Theme variants === */
 body[data-theme="true-dark"] {
   --bg-0: #000000;
-  --bg-1: #0a0a0c;
-  --bg-2: #131318;
-  --bg-3: #1c1c22;
-  --border: #1a1a22;
-  --border-soft: rgba(255, 255, 255, 0.04);
-  --text-faint: #4a4a52;
+  --bg-1: #0e0e0e;
+  --bg-2: #181818;
+  --bg-3: #232323;
+  --border: #262626;
+  --border-soft: rgba(255, 255, 255, 0.05);
+  --text-faint: #4a4a4a;
+  --text-dim: #888888;
 }
 
 body[data-theme="midnight"] {

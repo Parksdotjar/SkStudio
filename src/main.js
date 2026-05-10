@@ -71,10 +71,17 @@ function welcomeHTML() {
     <div class="welcome">
       <div class="welcome-hero">
         <div class="welcome-logo">
-          <svg width="110" height="110" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L22 12L12 22L2 12L12 2Z" fill="#3a3a40" stroke="#2bb573" stroke-width="0.4"/>
-            <path d="M12 6L18 12L12 18L6 12L12 6Z" fill="#3ddc84"/>
-            <path d="M12 9L15 12L12 15L9 12L12 9Z" fill="#1ec3a4"/>
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="#3ddc84">
+            <!-- Main 4-point sparkle -->
+            <path d="M60 4 L 64 50 L 116 60 L 64 70 L 60 116 L 56 70 L 4 60 L 56 50 Z"/>
+            <!-- Small sparkle top-right -->
+            <path d="M95 18 L 96.5 28 L 106 30 L 96.5 32 L 95 42 L 93.5 32 L 84 30 L 93.5 28 Z" opacity="0.75"/>
+            <!-- Small sparkle bottom-left -->
+            <path d="M22 90 L 23 96 L 29 97.5 L 23 99 L 22 105 L 21 99 L 15 97.5 L 21 96 Z" opacity="0.6"/>
+            <!-- Tiny dot accents -->
+            <circle cx="100" cy="92" r="2.5" opacity="0.5"/>
+            <circle cx="20" cy="22" r="1.8" opacity="0.45"/>
+            <circle cx="80" cy="105" r="1.4" opacity="0.4"/>
           </svg>
         </div>
         <div>
@@ -126,7 +133,7 @@ function renderTabs() {
     el.dataset.id = tab.id;
     el.innerHTML = `
       <span class="tab-icon">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L22 12L12 22L2 12L12 2Z" opacity="0.9"/></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.2 L 13.1 9.4 L 22.8 12 L 13.1 14.6 L 12 22.8 L 10.9 14.6 L 1.2 12 L 10.9 9.4 Z"/></svg>
       </span>
       <span class="tab-title">${escapeHtml(tab.title)}${tab.dirty ? ' <span class="tab-dirty">•</span>' : ""}</span>
       <span class="tab-close" data-close="${tab.id}">

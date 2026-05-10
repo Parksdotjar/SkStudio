@@ -119,8 +119,10 @@ function folderSvg() {
 }
 function fileSvg(name) {
   const isSk = name.endsWith(".sk");
-  const color = isSk ? "#3ddc84" : "currentColor";
-  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+  if (isSk) {
+    return `<svg width="13" height="13" viewBox="0 0 24 24" fill="#3ddc84"><path d="M12 1.2 L 13.1 9.4 L 22.8 12 L 13.1 14.6 L 12 22.8 L 10.9 14.6 L 1.2 12 L 10.9 9.4 Z"/></svg>`;
+  }
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
 }
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
