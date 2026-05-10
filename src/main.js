@@ -165,6 +165,7 @@ function activateTab(id) {
     fontSize: settings.fontSize,
     acceptKey: settings.acceptKey,
     ghostText: settings.ghostText,
+    syntaxColors: settings.syntaxColors,
     onChange: (doc) => {
       if (tab.content !== doc) { tab.content = doc; tab.dirty = true; renderTabs(); }
     },
@@ -309,6 +310,7 @@ onSettingsChange((s, key) => {
     if (key === "fontSize" && tab.view.setFontSize) tab.view.setFontSize(s.fontSize);
     if (key === "acceptKey" && tab.view.setAcceptKey) tab.view.setAcceptKey(s.acceptKey);
     if (key === "ghostText" && tab.view.setGhostText) tab.view.setGhostText(s.ghostText);
+    if (key === "syntaxColors" && tab.view.setSyntaxColors) tab.view.setSyntaxColors(s.syntaxColors);
   }
 });
 

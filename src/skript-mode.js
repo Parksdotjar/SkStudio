@@ -2,6 +2,7 @@
 import { StreamLanguage } from "@codemirror/language";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
+import { DEFAULT_COLORS } from "./settings-presets.js";
 
 const KEYWORDS = new Set([
   "if", "else", "else if", "loop", "while", "stop", "exit", "return",
@@ -32,7 +33,6 @@ export const skriptLanguage = StreamLanguage.define({
   startState: () => ({ inString: false, stringChar: null }),
 
   token(stream, state) {
-    // String continuation
     if (state.inString) {
       while (!stream.eol()) {
         const ch = stream.next();
@@ -45,13 +45,11 @@ export const skriptLanguage = StreamLanguage.define({
       return "string";
     }
 
-    // Comments
     if (stream.match("#")) {
       stream.skipToEnd();
       return "comment";
     }
 
-    // Strings
     if (stream.match('"') || stream.match("'")) {
       state.inString = true;
       state.stringChar = stream.string[stream.pos - 1];
@@ -66,26 +64,17 @@ export const skriptLanguage = StreamLanguage.define({
       return "string";
     }
 
-    // Numbers
     if (stream.match(/^-?\d+(\.\d+)?/)) return "number";
-
-    // Variables: {var}, {_local}, {@const}
     if (stream.match(/^\{[^}]*\}/)) return "variableName";
-
-    // Placeholders %expr%
     if (stream.match(/^%[^%]*%/)) return "meta";
-
-    // Operators
     if (stream.match(/^(==|!=|<=|>=|->|=>|[+\-*/=<>])/)) return "operator";
 
-    // Words
     const word = stream.match(/^[A-Za-z_][\w-]*/);
     if (word) {
       const w = word[0].toLowerCase();
       if (KEYWORDS.has(w)) return "keyword";
       if (EVENTS.has(w)) return "atom";
       if (TYPES.has(w)) return "typeName";
-      // "on <event>" pattern → make event-ish words a heading at line start
       if (stream.sol && stream.string.trimStart().startsWith("on ")) return "atom";
       return "variableName";
     }
@@ -95,18 +84,22 @@ export const skriptLanguage = StreamLanguage.define({
   },
 });
 
-export const skriptHighlightStyle = HighlightStyle.define([
-  { tag: t.keyword, color: "#c586c0", fontWeight: "600" },
-  { tag: t.atom, color: "#4ec9b0" },
-  { tag: t.string, color: "#ce9178" },
-  { tag: t.number, color: "#b5cea8" },
-  { tag: t.comment, color: "#6a9955", fontStyle: "italic" },
-  { tag: t.variableName, color: "#9cdcfe" },
-  { tag: t.typeName, color: "#4ec9b0" },
-  { tag: t.meta, color: "#dcdcaa" },
-  { tag: t.operator, color: "#d4d4d4" },
-]);
+/** Build a HighlightStyle from a colors object (see settings-presets.js). */
+export function buildSkriptHighlight(colors = DEFAULT_COLORS) {
+  return HighlightStyle.define([
+    { tag: t.keyword, color: colors.keyword, fontWeight: "600" },
+    { tag: t.atom, color: colors.atom },
+    { tag: t.string, color: colors.string },
+    { tag: t.number, color: colors.number },
+    { tag: t.comment, color: colors.comment, fontStyle: "italic" },
+    { tag: t.variableName, color: colors.variable },
+    { tag: t.typeName, color: colors.type },
+    { tag: t.meta, color: colors.meta },
+    { tag: t.operator, color: colors.operator },
+  ]);
+}
 
-export function skript() {
-  return [skriptLanguage, syntaxHighlighting(skriptHighlightStyle)];
+/** Returns the skript-mode extension bundle for a given color set. */
+export function skript(colors = DEFAULT_COLORS) {
+  return [skriptLanguage, syntaxHighlighting(buildSkriptHighlight(colors))];
 }

@@ -4,18 +4,20 @@
 import { ViewPlugin, Decoration, EditorView, WidgetType } from "@codemirror/view";
 import { StateField, StateEffect } from "@codemirror/state";
 import { completionStatus } from "@codemirror/autocomplete";
-import { ALL_LABELS } from "./skript/completions.js";
 import { expandTemplate } from "./skript/completions.js";
-import { EVENTS, EFFECTS, CONDITIONS, EXPRESSIONS, SNIPPETS } from "./skript/data.js";
+import { getAllCompletions, onCompletionsChange } from "./completions-store.js";
 
-// Map label -> entry, for resolving snippet templates when accepting
-const LABEL_TO_ENTRY = new Map();
-for (const e of [...EVENTS, ...EFFECTS, ...CONDITIONS, ...EXPRESSIONS, ...SNIPPETS]) {
-  if (!LABEL_TO_ENTRY.has(e.label)) LABEL_TO_ENTRY.set(e.label, e);
+// Live-rebuilt label list and label→entry map
+let SORTED_LABELS = [];
+let LABEL_TO_ENTRY = new Map();
+
+function rebuild() {
+  const all = getAllCompletions();
+  LABEL_TO_ENTRY = new Map(all.map((e) => [e.label, e]));
+  SORTED_LABELS = all.map((e) => e.label).sort((a, b) => b.length - a.length);
 }
-
-// Sort labels longest first so prefix matches prefer longer suggestions
-const SORTED_LABELS = [...ALL_LABELS].sort((a, b) => b.length - a.length);
+rebuild();
+onCompletionsChange(rebuild);
 
 class GhostWidget extends WidgetType {
   constructor(text) { super(); this.text = text; }

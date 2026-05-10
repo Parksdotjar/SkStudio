@@ -13,11 +13,13 @@ import {
 import { skript } from "./skript-mode.js";
 import { skriptCompletions } from "./skript/completions.js";
 import { ghostTextExtension, acceptGhost } from "./ghost-text.js";
+import { DEFAULT_COLORS } from "./settings-presets.js";
 
 // Compartments for live reconfig
 const fontCompartment = new Compartment();
 const completionKeyCompartment = new Compartment();
 const ghostCompartment = new Compartment();
+const syntaxCompartment = new Compartment();
 
 function buildFontTheme(fontSize) {
   return EditorView.theme({
@@ -71,6 +73,7 @@ export function createEditor(parent, {
   fontSize = 13.5,
   acceptKey = "enter",
   ghostText = true,
+  syntaxColors = DEFAULT_COLORS,
 }) {
   const updateListener = EditorView.updateListener.of((update) => {
     if (update.docChanged && onChange) onChange(update.state.doc.toString());
@@ -112,7 +115,7 @@ export function createEditor(parent, {
         ...searchKeymap,
         indentWithTab,
       ]),
-      skript(),
+      syntaxCompartment.of(skript(syntaxColors)),
       updateListener,
       fontCompartment.of(buildFontTheme(fontSize)),
     ],
@@ -120,7 +123,6 @@ export function createEditor(parent, {
 
   const view = new EditorView({ state, parent });
 
-  // Public API for live reconfig from settings panel
   view.setFontSize = (px) => {
     view.dispatch({ effects: fontCompartment.reconfigure(buildFontTheme(px)) });
   };
@@ -129,6 +131,9 @@ export function createEditor(parent, {
   };
   view.setGhostText = (enabled) => {
     view.dispatch({ effects: ghostCompartment.reconfigure(enabled ? ghostTextExtension : []) });
+  };
+  view.setSyntaxColors = (colors) => {
+    view.dispatch({ effects: syntaxCompartment.reconfigure(skript(colors)) });
   };
 
   return view;
