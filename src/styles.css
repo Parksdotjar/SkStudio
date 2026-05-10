@@ -7,11 +7,12 @@
 }
 
 :root {
-  --bg-0: #0d0d0f;
+  --bg-0: #09090b;
   --bg-1: #131316;
-  --bg-2: #1a1a1e;
-  --bg-3: #232328;
+  --bg-2: #1c1c21;
+  --bg-3: #25252b;
   --border: #2a2a30;
+  --border-soft: rgba(255, 255, 255, 0.06);
   --text: #e6e6e8;
   --text-dim: #8a8a92;
   --text-faint: #5a5a62;
@@ -20,6 +21,10 @@
   --danger: #e5484d;
   --font: "Segoe UI", system-ui, -apple-system, sans-serif;
   --mono: "JetBrains Mono", "Cascadia Code", "Consolas", monospace;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
 html, body {
@@ -43,12 +48,11 @@ button {
 
 /* === Titlebar === */
 .titlebar {
-  height: 36px;
+  height: 38px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: var(--bg-0);
-  border-bottom: 1px solid var(--border);
   -webkit-user-select: none;
 }
 
@@ -131,19 +135,25 @@ button {
 /* === App layout === */
 .app {
   display: flex;
-  height: calc(100vh - 36px);
+  gap: 6px;
+  padding: 0 6px 6px 6px;
+  height: calc(100vh - 38px);
+  background: var(--bg-0);
 }
 
-/* === Sidebar === */
+/* === Sidebar (icon rail) === */
 .sidebar {
   width: 48px;
-  background: var(--bg-0);
-  border-right: 1px solid var(--border);
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 8px 0;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .sidebar-btn {
@@ -153,8 +163,8 @@ button {
   align-items: center;
   justify-content: center;
   color: var(--text-dim);
-  border-radius: 4px;
-  transition: background 0.1s, color 0.1s;
+  border-radius: var(--radius-sm);
+  transition: background 0.12s, color 0.12s;
   position: relative;
 }
 
@@ -164,18 +174,8 @@ button {
 }
 
 .sidebar-btn.active {
-  color: var(--text);
-}
-
-.sidebar-btn.active::before {
-  content: "";
-  position: absolute;
-  left: -8px;
-  top: 8px;
-  bottom: 8px;
-  width: 2px;
-  background: var(--accent);
-  border-radius: 1px;
+  background: var(--bg-3);
+  color: var(--accent);
 }
 
 /* === Editor area === */
@@ -184,6 +184,11 @@ button {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
 /* === Tab bar === */
@@ -191,8 +196,8 @@ button {
   height: 36px;
   display: flex;
   align-items: center;
-  background: var(--bg-0);
-  border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border-soft);
   padding: 0 4px;
   gap: 2px;
   overflow: hidden;
@@ -283,7 +288,7 @@ button {
 /* === Content area === */
 .content {
   flex: 1;
-  background: var(--bg-0);
+  background: var(--bg-1);
   overflow: hidden;
   position: relative;
 }
@@ -387,8 +392,8 @@ button {
 }
 
 .cm-gutters {
-  background: var(--bg-0) !important;
-  border-right: 1px solid var(--border) !important;
+  background: var(--bg-1) !important;
+  border-right: 1px solid var(--border-soft) !important;
   color: var(--text-faint) !important;
 }
 
@@ -415,13 +420,13 @@ button {
 
 /* === Status bar === */
 .status-bar {
-  height: 22px;
+  height: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 12px;
-  background: var(--bg-0);
-  border-top: 1px solid var(--border);
+  padding: 0 14px;
+  background: var(--bg-1);
+  border-top: 1px solid var(--border-soft);
   font-size: 11.5px;
   font-weight: 600;
   color: var(--text-dim);
@@ -436,11 +441,14 @@ button {
 .side-panel {
   width: 240px;
   background: var(--bg-1);
-  border-right: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .side-panel.hidden {
@@ -451,8 +459,8 @@ button {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-soft);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -562,18 +570,18 @@ button {
 /* === Find & Replace panel === */
 .find-replace {
   position: absolute;
-  top: 80px;
-  right: 18px;
+  top: 60px;
+  right: 22px;
   z-index: 50;
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  border-radius: var(--radius);
+  padding: 10px;
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 380px;
+  gap: 6px;
+  min-width: 400px;
 }
 
 .find-replace.hidden { display: none; }
@@ -649,12 +657,12 @@ button {
   position: relative;
   background: var(--bg-1);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   width: 560px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  box-shadow: var(--shadow-lg);
 }
 
 .settings-header {
@@ -747,7 +755,7 @@ button {
   flex-direction: column;
   height: 240px;
   background: var(--bg-1);
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-soft);
   font-family: var(--mono);
   font-size: 12.5px;
 }
@@ -758,9 +766,9 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 10px;
-  background: var(--bg-0);
-  border-bottom: 1px solid var(--border);
+  padding: 6px 12px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border-soft);
   font-family: var(--font);
   font-size: 11px;
   font-weight: 700;
@@ -880,27 +888,30 @@ button {
 /* === Theme variants === */
 body[data-theme="true-dark"] {
   --bg-0: #000000;
-  --bg-1: #050507;
-  --bg-2: #0a0a0d;
-  --bg-3: #14141a;
-  --border: #1a1a20;
+  --bg-1: #0a0a0c;
+  --bg-2: #131318;
+  --bg-3: #1c1c22;
+  --border: #1a1a22;
+  --border-soft: rgba(255, 255, 255, 0.04);
   --text-faint: #4a4a52;
 }
 
 body[data-theme="midnight"] {
-  --bg-0: #07070a;
-  --bg-1: #0c0c12;
-  --bg-2: #14141c;
-  --bg-3: #1d1d28;
+  --bg-0: #050510;
+  --bg-1: #0d0d1a;
+  --bg-2: #15152a;
+  --bg-3: #1e1e38;
+  --border: #1f1f3a;
   --accent: #6f8cff;
   --accent-dim: #5b73d6;
 }
 
 body[data-theme="forest"] {
-  --bg-0: #0e1411;
-  --bg-1: #131a16;
-  --bg-2: #1a221d;
-  --bg-3: #232c25;
+  --bg-0: #0a110d;
+  --bg-1: #111a14;
+  --bg-2: #1a2520;
+  --bg-3: #232f28;
+  --border: #1f2c24;
   --accent: #5fd17f;
   --accent-dim: #43a85f;
 }
