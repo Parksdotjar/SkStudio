@@ -10,6 +10,7 @@ import {
   isModified,
   isCustom,
 } from "./completions-store.js";
+import { showAlert, showConfirm, showPrompt } from "./dialogs.js";
 
 const STORAGE_KEY = "skstudio.settings";
 
@@ -388,8 +389,13 @@ function renderCompList(root) {
       resetCompletion(label);
       renderCompList(root);
     });
-    form.querySelector(".comp-delete").onclick = () => {
-      if (confirm(`Remove "${label}"?`)) {
+    form.querySelector(".comp-delete").onclick = async () => {
+      const ok = await showConfirm(`Remove "${label}"? This can't be undone for custom completions.`, {
+        title: "Remove completion",
+        okLabel: "Remove",
+        danger: true,
+      });
+      if (ok) {
         deleteCompletion(label);
         completionsState.expanded = null;
         renderCompList(root);
@@ -437,17 +443,25 @@ function renderCompRow(entry) {
   `;
 }
 
-function promptAddCustom(root) {
-  const label = prompt("Label for the new autocomplete (the text you'll type to trigger it):");
+async function promptAddCustom(root) {
+  const label = await showPrompt("Label for the new autocomplete (the text you'll type to trigger it):", {
+    title: "New autocomplete",
+    placeholder: "e.g. my-shortcut",
+    okLabel: "Create",
+  });
   if (!label || !label.trim()) return;
+  const trimmed = label.trim();
   const ok = addCustomCompletion({
-    label: label.trim(),
+    label: trimmed,
     _type: "custom",
     doc: "",
-    snippet: label.trim() + " $0",
+    snippet: trimmed + " $0",
   });
-  if (!ok) { alert("That label already exists."); return; }
-  completionsState.expanded = label.trim();
+  if (!ok) {
+    await showAlert("A completion with that label already exists.", { title: "Already exists" });
+    return;
+  }
+  completionsState.expanded = trimmed;
   renderCompList(root);
 }
 

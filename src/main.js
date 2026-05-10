@@ -5,6 +5,7 @@ import { initFindReplace, toggle as toggleFindReplace, show as showFindReplace }
 import { initTerminal, toggle as toggleTerminal } from "./terminal.js";
 import { showSettingsModal, getSettings, onSettingsChange, applyTheme } from "./settings.js";
 import { initMenuBar } from "./menu-bar.js";
+import { showAlert, showConfirm } from "./dialogs.js";
 import { undo, redo, selectAll } from "@codemirror/commands";
 
 // Tauri imports — only available inside the Tauri runtime
@@ -188,11 +189,18 @@ function newTab({ title = `New file ${state.nextId}`, path = null, content = "" 
   activateTab(id);
 }
 
-function closeTab(id) {
+async function closeTab(id) {
   const idx = state.tabs.findIndex((t) => t.id === id);
   if (idx === -1) return;
   const tab = state.tabs[idx];
-  if (tab.dirty && !confirm(`"${tab.title}" has unsaved changes. Close anyway?`)) return;
+  if (tab.dirty) {
+    const ok = await showConfirm(`"${tab.title}" has unsaved changes. Close it anyway?`, {
+      title: "Unsaved changes",
+      okLabel: "Close without saving",
+      danger: true,
+    });
+    if (!ok) return;
+  }
   if (tab.view) tab.view.destroy();
   state.tabs.splice(idx, 1);
 
@@ -243,7 +251,7 @@ async function handleAction(action) {
     // Tools
     case "settings":   showSettingsModal(); break;
     case "terminal":   toggleTerminal(); break;
-    case "format":     alert("Skript formatter is coming soon."); break;
+    case "format":     showAlert("The Skript formatter is coming soon.", { title: "Format Document" }); break;
     case "analyzer":   setActivePanel("parser"); break;
     case "reload":     window.location.reload(); break;
 
@@ -251,7 +259,7 @@ async function handleAction(action) {
     case "welcome":    showWelcomeView(); break;
     case "discord":    openExternal("https://discord.gg/skript"); break;
     case "github":     openExternal("https://github.com/Parksdotjar/SkStudio"); break;
-    case "updates":    alert("SkStudio v0.1.0 — you're on the latest version."); break;
+    case "updates":    showAlert("SkStudio v0.1.0 — you're on the latest version.", { title: "Check for Updates" }); break;
     case "about":      showAboutModal(); break;
   }
 }
@@ -355,7 +363,7 @@ function showAboutModal() {
 }
 
 async function openFile() {
-  if (!openDialog || !invoke) { alert("File operations only work in the Tauri app"); return; }
+  if (!openDialog || !invoke) { showAlert("File operations are only available in the SkStudio app — not in the browser preview.", { title: "Unavailable" }); return; }
   const selected = await openDialog({
     multiple: false,
     filters: [{ name: "Skript", extensions: ["sk"] }, { name: "All", extensions: ["*"] }],

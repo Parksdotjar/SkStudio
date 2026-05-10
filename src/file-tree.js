@@ -1,4 +1,6 @@
 // File tree sidebar panel
+import { showAlert } from "./dialogs.js";
+
 let invoke, openDialog;
 try {
   ({ invoke } = await import("@tauri-apps/api/core"));
@@ -96,7 +98,7 @@ export function createFileTree(rootEl, { onOpenFile }) {
 
   async function openFolder() {
     if (!openDialog) {
-      alert("Folder operations only work in the Tauri app");
+      await showAlert("Folder operations are only available in the SkStudio app.", { title: "Unavailable" });
       return;
     }
     const selected = await openDialog({ directory: true, multiple: false });
