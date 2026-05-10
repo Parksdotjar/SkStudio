@@ -156,6 +156,8 @@ function activateTab(id) {
   tab.view = createEditor(pane, {
     initialDoc: tab.content,
     fontSize: settings.fontSize,
+    acceptKey: settings.acceptKey,
+    ghostText: settings.ghostText,
     onChange: (doc) => {
       if (tab.content !== doc) { tab.content = doc; tab.dirty = true; renderTabs(); }
     },
@@ -250,15 +252,24 @@ async function saveActive() {
 }
 
 // === Sidebar panel switching ===
+// Click an active panel button to collapse it. Click another to switch.
 function setActivePanel(name) {
+  // Toggle off if clicking the already-active panel
+  if (state.activePanel === name) {
+    state.activePanel = null;
+    document.querySelectorAll(".sidebar-btn").forEach((b) => b.classList.remove("active"));
+    hideFilePanel();
+    return;
+  }
+
   state.activePanel = name;
   document.querySelectorAll(".sidebar-btn").forEach((b) => {
     b.classList.toggle("active", b.dataset.panel === name);
   });
-  if (name === "explorer") showFilePanel();
-  else hideFilePanel();
-  if (name === "parser") {
-    // Parser panel placeholder — reserved for the analyzer feature
+
+  if (name === "explorer") {
+    showFilePanel();
+  } else if (name === "parser") {
     const panel = ensureSidePanel();
     panel.classList.remove("hidden");
     panel.innerHTML = `<div class="panel-header"><span class="panel-title">Parser</span></div><div class="panel-empty"><p>Skript analyzer — coming soon.</p></div>`;
@@ -284,10 +295,13 @@ function escapeHtml(s) {
 }
 
 // === Settings → editor live updates ===
-onSettingsChange((s) => {
+onSettingsChange((s, key) => {
   applyTheme(s.theme);
   for (const tab of state.tabs) {
-    if (tab.view && tab.view.setFontSize) tab.view.setFontSize(s.fontSize);
+    if (!tab.view) continue;
+    if (key === "fontSize" && tab.view.setFontSize) tab.view.setFontSize(s.fontSize);
+    if (key === "acceptKey" && tab.view.setAcceptKey) tab.view.setAcceptKey(s.acceptKey);
+    if (key === "ghostText" && tab.view.setGhostText) tab.view.setGhostText(s.ghostText);
   }
 });
 
@@ -308,4 +322,6 @@ initTerminal(document.querySelector(".editor-area"));
 
 setupWindowControls();
 showWelcome();
-showFilePanel();
+// Start with explorer panel open (matches the active sidebar button)
+state.activePanel = null; // ensure setActivePanel will open it
+setActivePanel("explorer");

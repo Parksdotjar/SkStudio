@@ -1,10 +1,49 @@
 // Smart completion source for CodeMirror 6
-import { snippetCompletion } from "@codemirror/autocomplete";
 import { EVENTS, EFFECTS, CONDITIONS, EXPRESSIONS, TYPES, SNIPPETS, SMART_HINTS } from "./data.js";
 
-// Build a completion item from a syntax-database entry
+/**
+ * Expand a template with $0 (cursor) and ${n:default} placeholders into
+ * plain text + cursor offset. Strips all snippet markup so nothing leaks
+ * into the editor.
+ */
+export function expandTemplate(template) {
+  let out = "";
+  let cursor = -1;
+  let i = 0;
+  while (i < template.length) {
+    if (template[i] === "$") {
+      // ${n:default}
+      const m = template.slice(i).match(/^\$\{(\d+):([^}]*)\}/);
+      if (m) {
+        if (cursor === -1 && m[1] !== "0") cursor = out.length; // cursor at first placeholder
+        out += m[2];
+        i += m[0].length;
+        continue;
+      }
+      // $0 — final cursor position
+      if (template[i + 1] === "0") {
+        cursor = out.length;
+        i += 2;
+        continue;
+      }
+      // bare $n — strip it
+      const n = template.slice(i).match(/^\$(\d+)/);
+      if (n) {
+        if (cursor === -1) cursor = out.length;
+        i += n[0].length;
+        continue;
+      }
+    }
+    out += template[i];
+    i++;
+  }
+  if (cursor === -1) cursor = out.length;
+  return { text: out, cursor };
+}
+
+/** Build a CodeMirror Completion from a Skript data entry. */
 function toCompletion(entry, type) {
-  const opts = {
+  const completion = {
     label: entry.label,
     detail: entry.detail || type,
     info: () => {
@@ -14,16 +53,23 @@ function toCompletion(entry, type) {
       wrap.textContent = entry.doc || "";
       return wrap;
     },
-    type: type,
+    type,
     boost: entry.smart ? 5 : 0,
   };
+
   if (entry.snippet) {
-    return snippetCompletion(entry.snippet, opts);
+    completion.apply = (view, _comp, from, to) => {
+      const { text, cursor } = expandTemplate(entry.snippet);
+      view.dispatch({
+        changes: { from, to, insert: text },
+        selection: { anchor: from + cursor },
+      });
+    };
   }
-  return opts;
+
+  return completion;
 }
 
-// All completions, pre-built once
 const ALL_COMPLETIONS = [
   ...EVENTS.map((e) => toCompletion(e, "keyword")),
   ...EFFECTS.map((e) => toCompletion(e, "function")),
@@ -33,11 +79,9 @@ const ALL_COMPLETIONS = [
   ...SNIPPETS.map((s) => toCompletion(s, "interface")),
 ];
 
-// Build context-aware lists
 const EVENTS_ONLY = EVENTS.map((e) => toCompletion(e, "keyword"));
 const SCAFFOLD_SNIPPETS = SNIPPETS.map((s) => toCompletion(s, "interface"));
 
-// Skript completion source
 export function skriptCompletions(context) {
   const word = context.matchBefore(/[\w-]+/);
   if (!word && !context.explicit) return null;
@@ -48,7 +92,6 @@ export function skriptCompletions(context) {
   const lineBefore = lineText.slice(0, context.pos - line.from);
   const indent = lineText.match(/^\s*/)[0].length;
 
-  // Context: at start of file (no indent), suggest events + scaffold
   if (indent === 0 && !lineBefore.includes(":")) {
     return {
       from: word ? word.from : context.pos,
@@ -57,7 +100,6 @@ export function skriptCompletions(context) {
     };
   }
 
-  // Context: indented (inside a trigger) — suggest effects, conditions, expressions
   return {
     from: word ? word.from : context.pos,
     options: ALL_COMPLETIONS,
@@ -65,8 +107,6 @@ export function skriptCompletions(context) {
   };
 }
 
-// Linter-like smart hint: scan doc for anti-patterns and surface as diagnostics
-// (Returned as a function the editor can call on demand.)
 export function findSmartHints(doc) {
   const hints = [];
   for (let i = 1; i <= doc.lines; i++) {
@@ -84,3 +124,12 @@ export function findSmartHints(doc) {
   }
   return hints;
 }
+
+/** All Skript labels (for ghost-text matching). */
+export const ALL_LABELS = [
+  ...EVENTS.map((e) => e.label),
+  ...EFFECTS.map((e) => e.label),
+  ...CONDITIONS.map((e) => e.label),
+  ...EXPRESSIONS.map((e) => e.label),
+  ...SNIPPETS.map((e) => e.label),
+];

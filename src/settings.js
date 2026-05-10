@@ -8,6 +8,8 @@ const DEFAULTS = {
   showLineNumbers: true,
   wordWrap: false,
   autoSave: false,
+  acceptKey: "enter",   // "enter" | "tab"
+  ghostText: true,      // inline Copilot-style suggestions
 };
 
 let current = load();
@@ -34,7 +36,7 @@ export function getSettings() {
 export function updateSetting(key, value) {
   current[key] = value;
   save();
-  for (const fn of listeners) fn(current);
+  for (const fn of listeners) fn(current, key);
 }
 
 export function onSettingsChange(fn) {
@@ -78,17 +80,36 @@ export function showSettingsModal() {
             <input type="checkbox" id="s-word-wrap" ${current.wordWrap ? "checked" : ""} />
           </div>
         </div>
+
+        <div class="settings-section">
+          <h3>Autocomplete</h3>
+          <div class="settings-row">
+            <label>Accept suggestion with</label>
+            <select id="s-accept-key">
+              <option value="enter" ${current.acceptKey === "enter" ? "selected" : ""}>Enter (Tab accepts inline)</option>
+              <option value="tab" ${current.acceptKey === "tab" ? "selected" : ""}>Tab (Enter is newline)</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <label>Inline suggestions (ghost text)</label>
+            <input type="checkbox" id="s-ghost-text" ${current.ghostText ? "checked" : ""} />
+          </div>
+          <p class="settings-hint">Ghost text shows a dim preview of the most likely completion past your cursor. Press Tab (or your accept key) to insert it.</p>
+        </div>
+
         <div class="settings-section">
           <h3>Theme</h3>
           <div class="settings-row">
             <label>Color theme</label>
             <select id="s-theme">
-              <option value="dark" ${current.theme === "dark" ? "selected" : ""}>Dark (default)</option>
+              <option value="dark" ${current.theme === "dark" ? "selected" : ""}>Dark</option>
+              <option value="true-dark" ${current.theme === "true-dark" ? "selected" : ""}>True Dark (pure black)</option>
               <option value="midnight" ${current.theme === "midnight" ? "selected" : ""}>Midnight</option>
               <option value="forest" ${current.theme === "forest" ? "selected" : ""}>Forest</option>
             </select>
           </div>
         </div>
+
         <div class="settings-section">
           <h3>Files</h3>
           <div class="settings-row">
@@ -96,6 +117,7 @@ export function showSettingsModal() {
             <input type="checkbox" id="s-auto-save" ${current.autoSave ? "checked" : ""} />
           </div>
         </div>
+
         <div class="settings-section">
           <h3>About</h3>
           <p class="settings-about">SkStudio v0.1.0 — A modern IDE for Skript<br/>Built with Rust + Tauri</p>
@@ -112,7 +134,6 @@ export function showSettingsModal() {
     if (e.key === "Escape" && modal) { close(); document.removeEventListener("keydown", escClose); }
   });
 
-  // Wire inputs
   const bind = (id, key, parser = (v) => v) => {
     const el = modal.querySelector(id);
     el.addEventListener(el.type === "checkbox" ? "change" : "input", () => {
@@ -126,9 +147,10 @@ export function showSettingsModal() {
   bind("#s-word-wrap", "wordWrap");
   bind("#s-theme", "theme");
   bind("#s-auto-save", "autoSave");
+  bind("#s-accept-key", "acceptKey");
+  bind("#s-ghost-text", "ghostText");
 }
 
-// Apply theme class to body
 export function applyTheme(theme) {
   document.body.dataset.theme = theme;
 }
