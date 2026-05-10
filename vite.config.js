@@ -2,6 +2,12 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   clearScreen: false,
+  build: {
+    target: "esnext",
+  },
+  esbuild: {
+    target: "esnext",
+  },
   server: {
     port: 1420,
     strictPort: true,
