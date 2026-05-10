@@ -1,0 +1,449 @@
+/* === SkStudio: minimal dark theme === */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-0: #0d0d0f;
+  --bg-1: #131316;
+  --bg-2: #1a1a1e;
+  --bg-3: #232328;
+  --border: #2a2a30;
+  --text: #e6e6e8;
+  --text-dim: #8a8a92;
+  --text-faint: #5a5a62;
+  --accent: #3ddc84;
+  --accent-dim: #1ec3a4;
+  --danger: #e5484d;
+  --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Code", "Consolas", monospace;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  user-select: none;
+}
+
+button {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* === Titlebar === */
+.titlebar {
+  height: 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-0);
+  border-bottom: 1px solid var(--border);
+  -webkit-user-select: none;
+}
+
+.titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 8px;
+  flex: 1;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.menu-bar {
+  display: flex;
+  gap: 0;
+}
+
+.menu-item {
+  padding: 6px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  border-radius: 3px;
+  transition: background 0.1s;
+}
+
+.menu-item:hover {
+  background: var(--bg-2);
+}
+
+.titlebar-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 4px;
+  color: var(--text-dim);
+  border-radius: 3px;
+  transition: background 0.1s, color 0.1s;
+}
+
+.titlebar-icon-btn:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.titlebar-controls {
+  display: flex;
+  height: 100%;
+}
+
+.titlebar-btn {
+  width: 46px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  transition: background 0.1s, color 0.1s;
+}
+
+.titlebar-btn:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.titlebar-btn.close:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+/* === App layout === */
+.app {
+  display: flex;
+  height: calc(100vh - 36px);
+}
+
+/* === Sidebar === */
+.sidebar {
+  width: 48px;
+  background: var(--bg-0);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 4px;
+}
+
+.sidebar-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  border-radius: 4px;
+  transition: background 0.1s, color 0.1s;
+  position: relative;
+}
+
+.sidebar-btn:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.sidebar-btn.active {
+  color: var(--text);
+}
+
+.sidebar-btn.active::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+/* === Editor area === */
+.editor-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* === Tab bar === */
+.tab-bar {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  background: var(--bg-0);
+  border-bottom: 1px solid var(--border);
+  padding: 0 4px;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.tabs::-webkit-scrollbar { height: 0; }
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: transparent;
+  border-radius: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s, color 0.1s;
+  max-width: 220px;
+}
+
+.tab:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.tab.active {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.tab-icon {
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+}
+
+.tab-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-dirty {
+  color: var(--accent);
+}
+
+.tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  color: var(--text-faint);
+  transition: background 0.1s, color 0.1s;
+}
+
+.tab-close:hover {
+  background: var(--bg-3);
+  color: var(--text);
+}
+
+.new-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--text-dim);
+  border-radius: 4px;
+  transition: background 0.1s, color 0.1s;
+}
+
+.new-tab-btn:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+/* === Content area === */
+.content {
+  flex: 1;
+  background: var(--bg-0);
+  overflow: hidden;
+  position: relative;
+}
+
+/* === Welcome screen === */
+.welcome {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  user-select: none;
+}
+
+.welcome-hero {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 48px;
+}
+
+.welcome-logo {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-title {
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--text);
+}
+
+.welcome-version {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.welcome-columns {
+  display: flex;
+  gap: 80px;
+}
+
+.welcome-col h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.welcome-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.1s;
+}
+
+.welcome-link:hover {
+  color: var(--accent);
+}
+
+.welcome-link svg {
+  flex-shrink: 0;
+}
+
+/* === Editor (CodeMirror) === */
+.editor-pane {
+  height: 100%;
+  width: 100%;
+  display: none;
+}
+
+.editor-pane.active {
+  display: block;
+}
+
+.cm-editor {
+  height: 100%;
+  font-family: var(--mono) !important;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.cm-editor.cm-focused {
+  outline: none !important;
+}
+
+.cm-scroller {
+  font-family: var(--mono) !important;
+}
+
+.cm-gutters {
+  background: var(--bg-0) !important;
+  border-right: 1px solid var(--border) !important;
+  color: var(--text-faint) !important;
+}
+
+.cm-activeLineGutter {
+  background: transparent !important;
+  color: var(--text-dim) !important;
+}
+
+.cm-activeLine {
+  background: rgba(255, 255, 255, 0.025) !important;
+}
+
+.cm-content {
+  caret-color: var(--accent) !important;
+}
+
+.cm-cursor, .cm-dropCursor {
+  border-left-color: var(--accent) !important;
+}
+
+.cm-selectionBackground {
+  background: rgba(61, 220, 132, 0.18) !important;
+}
+
+/* === Status bar === */
+.status-bar {
+  height: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px;
+  background: var(--bg-0);
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.status-right {
+  display: flex;
+  gap: 14px;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #34343a;
+}
