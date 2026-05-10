@@ -4,6 +4,8 @@ import { createFileTree } from "./file-tree.js";
 import { initFindReplace, toggle as toggleFindReplace, show as showFindReplace } from "./find-replace.js";
 import { initTerminal, toggle as toggleTerminal } from "./terminal.js";
 import { showSettingsModal, getSettings, onSettingsChange, applyTheme } from "./settings.js";
+import { initMenuBar } from "./menu-bar.js";
+import { undo, redo, selectAll } from "@codemirror/commands";
 
 // Tauri imports — only available inside the Tauri runtime
 let invoke, openDialog, saveDialog, getCurrentWindow, openShellUrl;
@@ -208,23 +210,148 @@ function closeTab(id) {
 }
 
 // === Actions ===
+function getActiveView() {
+  const tab = state.tabs.find((t) => t.id === state.activeId);
+  return tab ? tab.view : null;
+}
+
 async function handleAction(action) {
   switch (action) {
+    // File
     case "new-file": newTab(); break;
     case "open-file": await openFile(); break;
     case "open-folder":
-      setActivePanel("explorer");
+      if (state.activePanel !== "explorer") setActivePanel("explorer");
       if (fileTree) fileTree.openFolder();
       break;
-    case "settings": showSettingsModal(); break;
-    case "discord":
-    case "github":
-      console.log(`${action} link clicked — TODO: open in external browser`);
-      break;
     case "save": await saveActive(); break;
-    case "find": showFindReplace(); break;
-    case "terminal": toggleTerminal(); break;
+    case "save-as": await saveActiveAs(); break;
+    case "close-tab": if (state.activeId) closeTab(state.activeId); break;
+    case "exit":
+      if (getCurrentWindow) (await getCurrentWindow()).close?.() ?? getCurrentWindow().close();
+      break;
+
+    // Edit
+    case "undo":       { const v = getActiveView(); if (v) { undo(v); v.focus(); } break; }
+    case "redo":       { const v = getActiveView(); if (v) { redo(v); v.focus(); } break; }
+    case "select-all": { const v = getActiveView(); if (v) { selectAll(v); v.focus(); } break; }
+    case "copy":       await editorCopy(); break;
+    case "cut":        await editorCut(); break;
+    case "paste":      await editorPaste(); break;
+    case "find":       showFindReplace(); break;
+
+    // Tools
+    case "settings":   showSettingsModal(); break;
+    case "terminal":   toggleTerminal(); break;
+    case "format":     alert("Skript formatter is coming soon."); break;
+    case "analyzer":   setActivePanel("parser"); break;
+    case "reload":     window.location.reload(); break;
+
+    // Other
+    case "welcome":    showWelcomeView(); break;
+    case "discord":    openExternal("https://discord.gg/skript"); break;
+    case "github":     openExternal("https://github.com/Parksdotjar/SkStudio"); break;
+    case "updates":    alert("SkStudio v0.1.0 — you're on the latest version."); break;
+    case "about":      showAboutModal(); break;
   }
+}
+
+function openExternal(url) {
+  // Tauri intercepts target=_blank and opens the OS default browser.
+  window.open(url, "_blank");
+}
+
+function showWelcomeView() {
+  state.activeId = null;
+  contentEl.innerHTML = "";
+  showWelcome();
+  renderTabs();
+  statusLine.textContent = "Line 1";
+  statusCol.textContent = "Column 1";
+  statusLen.textContent = "Length 0";
+}
+
+async function editorCopy() {
+  const v = getActiveView();
+  if (!v) return;
+  const sel = v.state.selection.main;
+  const text = v.state.sliceDoc(sel.from, sel.to);
+  if (text) await navigator.clipboard.writeText(text);
+}
+
+async function editorCut() {
+  const v = getActiveView();
+  if (!v) return;
+  const sel = v.state.selection.main;
+  const text = v.state.sliceDoc(sel.from, sel.to);
+  if (text) {
+    await navigator.clipboard.writeText(text);
+    v.dispatch({ changes: { from: sel.from, to: sel.to, insert: "" } });
+  }
+  v.focus();
+}
+
+async function editorPaste() {
+  const v = getActiveView();
+  if (!v) return;
+  try {
+    const text = await navigator.clipboard.readText();
+    const sel = v.state.selection.main;
+    v.dispatch({
+      changes: { from: sel.from, to: sel.to, insert: text },
+      selection: { anchor: sel.from + text.length },
+    });
+    v.focus();
+  } catch (e) {
+    console.warn("Paste failed:", e);
+  }
+}
+
+async function saveActiveAs() {
+  const tab = state.tabs.find((t) => t.id === state.activeId);
+  if (!tab || !saveDialog || !invoke) return;
+  const path = await saveDialog({
+    defaultPath: tab.title,
+    filters: [{ name: "Skript", extensions: ["sk"] }, { name: "All", extensions: ["*"] }],
+  });
+  if (!path) return;
+  tab.path = path;
+  tab.title = path.split(/[\\/]/).pop();
+  await invoke("write_file", { path, content: tab.content });
+  tab.dirty = false;
+  renderTabs();
+}
+
+function showAboutModal() {
+  const m = document.createElement("div");
+  m.className = "settings-modal";
+  m.innerHTML = `
+    <div class="settings-backdrop"></div>
+    <div class="about-window">
+      <div class="about-logo">
+        <svg width="80" height="80" viewBox="0 0 120 120" fill="#3ddc84">
+          <path d="M60 4 L 64 50 L 116 60 L 64 70 L 60 116 L 56 70 L 4 60 L 56 50 Z"/>
+          <path d="M95 18 L 96.5 28 L 106 30 L 96.5 32 L 95 42 L 93.5 32 L 84 30 L 93.5 28 Z" opacity="0.75"/>
+        </svg>
+      </div>
+      <h2>SkStudio</h2>
+      <p class="about-version">Version 0.1.0</p>
+      <p class="about-tagline">A modern IDE for Skript</p>
+      <p class="about-credits">Built with Rust + Tauri • CodeMirror 6</p>
+      <div class="about-actions">
+        <button class="panel-btn" id="about-github">GitHub</button>
+        <button class="panel-btn" id="about-close">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(m);
+  const close = () => m.remove();
+  m.querySelector("#about-close").onclick = close;
+  m.querySelector("#about-github").onclick = () => openExternal("https://github.com/Parksdotjar/SkStudio");
+  m.querySelector(".settings-backdrop").onclick = close;
+  document.addEventListener("keydown", function esc(e) {
+    if (e.key === "Escape") { close(); document.removeEventListener("keydown", esc); }
+  });
 }
 
 async function openFile() {
@@ -330,6 +457,7 @@ initFindReplace({ getView: () => {
 initTerminal(document.querySelector(".editor-area"));
 
 setupWindowControls();
+initMenuBar({ onAction: handleAction });
 showWelcome();
 // Start with explorer panel open (matches the active sidebar button)
 state.activePanel = null; // ensure setActivePanel will open it

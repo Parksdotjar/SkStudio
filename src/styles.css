@@ -86,8 +86,120 @@ button {
   transition: background 0.1s;
 }
 
-.menu-item:hover {
+.menu-item:hover,
+.menu-item.menu-item-open {
   background: var(--bg-2);
+}
+
+.menu-item.menu-item-open {
+  color: var(--accent);
+}
+
+/* === Dropdown menu === */
+.dropdown-menu {
+  position: fixed;
+  z-index: 200;
+  min-width: 220px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  padding: 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  user-select: none;
+  animation: dd-in 80ms ease-out;
+}
+
+@keyframes dd-in {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dd-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  padding: 6px 12px;
+  border-radius: 4px;
+  color: var(--text);
+  text-align: left;
+  transition: background 0.08s, color 0.08s;
+}
+
+.dd-item:hover {
+  background: var(--bg-3);
+}
+
+.dd-label {
+  flex: 1;
+}
+
+.dd-shortcut {
+  color: var(--text-faint);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.dd-separator {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 4px 6px;
+}
+
+/* === About modal === */
+.about-window {
+  position: relative;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 380px;
+  padding: 28px 24px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.about-logo {
+  margin-bottom: 14px;
+}
+
+.about-window h2 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+.about-version {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.about-tagline {
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.about-credits {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  margin-bottom: 20px;
+}
+
+.about-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
 }
 
 .titlebar-icon-btn {
