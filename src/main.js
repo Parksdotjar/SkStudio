@@ -169,6 +169,14 @@ function renderTabs() {
 }
 
 function activateTab(id) {
+  // If block mode is active and user is switching to a different tab, exit block mode first
+  if (_blockEditorActive && id !== state.activeId) {
+    exitBlockMode();
+    return;
+  }
+  _blockEditorActive = false;
+  document.getElementById("block-mode-btn")?.classList.remove("active");
+
   state.activeId = id;
   contentEl.innerHTML = "";
 
@@ -660,6 +668,78 @@ function showAboutModal() {
   });
 }
 
+// === Block Editor mode ===
+let _blockEditorActive = false;
+let _blockEditorInst   = null;
+let _prevPanel         = null;
+
+async function toggleBlockMode() {
+  if (_blockEditorActive) {
+    exitBlockMode();
+  } else {
+    await enterBlockMode();
+  }
+}
+
+async function enterBlockMode() {
+  const tab = state.tabs.find(t => t.id === state.activeId);
+  if (!tab) {
+    showAlert("Open a .sk file first to use the block editor.", { title: "No file open" });
+    return;
+  }
+
+  _blockEditorActive = true;
+  _prevPanel = state.activePanel;
+
+  // Highlight toggle btn
+  document.getElementById("block-mode-btn")?.classList.add("active");
+
+  // Ensure side panel is visible and will host the palette
+  const panel = ensureSidePanel();
+  panel.classList.remove("hidden");
+  // Clear any existing panel content — block palette will own it
+  panel.innerHTML = '';
+
+  // Replace content area with block canvas
+  contentEl.innerHTML = '';
+  const canvasWrap = document.createElement('div');
+  canvasWrap.id    = 'be-canvas-wrap';
+  canvasWrap.style.cssText = 'width:100%;height:100%;';
+  contentEl.appendChild(canvasWrap);
+
+  // Lazy-load block editor
+  const { initBlockEditor } = await import('./block-editor.js');
+  _blockEditorInst = initBlockEditor(canvasWrap, panel, tab.content, (code) => {
+    // Real-time code sync back to the tab
+    tab.content  = code;
+    tab.dirty    = true;
+    renderTabs();
+  });
+
+  // Update sidebar btn highlight (none active — palette is in side panel directly)
+  state.activePanel = '__blocks__';
+  document.querySelectorAll(".sidebar-btn").forEach(b => b.classList.remove("active"));
+}
+
+function exitBlockMode() {
+  if (!_blockEditorActive) return;
+  _blockEditorActive = false;
+
+  document.getElementById("block-mode-btn")?.classList.remove("active");
+
+  if (_blockEditorInst) { _blockEditorInst.destroy(); _blockEditorInst = null; }
+
+  // Restore the tab's text editor with the (now updated) content
+  if (state.activeId) {
+    activateTab(state.activeId);
+  }
+
+  // Restore side panel
+  state.activePanel = null;
+  if (_prevPanel) setActivePanel(_prevPanel);
+  _prevPanel = null;
+}
+
 // === Update modal / toast ===
 async function showUpdateModal() {
   const result = await checkForUpdate();
@@ -762,6 +842,7 @@ onSettingsChange((s, key) => {
 applyTheme(getSettings().theme);
 newTabBtn.onclick = () => newTab();
 document.getElementById("settings-btn").onclick = () => showSettingsModal();
+document.getElementById("block-mode-btn").onclick = () => toggleBlockMode();
 document.querySelectorAll(".sidebar-btn").forEach((btn) => {
   btn.onclick = () => setActivePanel(btn.dataset.panel);
 });
