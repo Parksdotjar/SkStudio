@@ -90,7 +90,7 @@ function welcomeHTML() {
     <div class="welcome">
       <div class="welcome-hero">
         <div class="welcome-logo">
-          <img src="/src/assets/logo.png" width="120" height="120" style="object-fit:contain;display:block;" draggable="false"/>
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="#3ddc84"><path d="M12 1.2 L 13.1 9.4 L 22.8 12 L 13.1 14.6 L 12 22.8 L 10.9 14.6 L 1.2 12 L 10.9 9.4 Z"/></svg>
         </div>
         <div>
           <div class="welcome-title">SkStudio</div>
@@ -638,7 +638,7 @@ function showAboutModal() {
     <div class="settings-backdrop"></div>
     <div class="about-window">
       <div class="about-logo">
-        <img src="/src/assets/logo.png" width="80" height="80" style="object-fit:contain;display:block;" draggable="false"/>
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="#3ddc84"><path d="M12 1.2 L 13.1 9.4 L 22.8 12 L 13.1 14.6 L 12 22.8 L 10.9 14.6 L 1.2 12 L 10.9 9.4 Z"/></svg>
       </div>
       <h2>SkStudio</h2>
       <p class="about-version">Version 0.1.0</p>
