@@ -13,6 +13,7 @@ import {
 import { skript } from "./skript-mode.js";
 import { skriptCompletions } from "./skript/completions.js";
 import { ghostTextExtension, acceptGhost } from "./ghost-text.js";
+import { skriptLintExtension } from "./skript/linter.js";
 import { DEFAULT_COLORS } from "./settings-presets.js";
 
 // Compartments for live reconfig
@@ -116,6 +117,7 @@ export function createEditor(parent, {
         indentWithTab,
       ]),
       syntaxCompartment.of(skript(syntaxColors)),
+      skriptLintExtension(),
       updateListener,
       fontCompartment.of(buildFontTheme(fontSize)),
     ],
