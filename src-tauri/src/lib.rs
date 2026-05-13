@@ -275,6 +275,30 @@ async fn get_github_jar(repo: &str) -> Result<String, String> {
         .ok_or_else(|| format!("no .jar asset in latest release of {}", repo))
 }
 
+// Get latest JAR URL from Modrinth (by project slug)
+async fn get_modrinth_jar(slug: &str) -> Result<String, String> {
+    let url = format!("https://api.modrinth.com/v2/project/{}/version", slug);
+    let json = http_get_json(&url).await?;
+
+    // Response is an array of versions, newest first
+    let versions = json.as_array().ok_or("Modrinth: expected array")?;
+    let latest = versions.first().ok_or_else(|| format!("Modrinth: no versions for {}", slug))?;
+
+    let files = latest["files"].as_array().ok_or("Modrinth: no files array")?;
+
+    // Prefer the primary file, fall back to any .jar
+    let file = files.iter()
+        .find(|f| f["primary"].as_bool().unwrap_or(false))
+        .or_else(|| files.iter().find(|f| {
+            f["filename"].as_str().map(|n| n.ends_with(".jar")).unwrap_or(false)
+        }))
+        .ok_or_else(|| format!("Modrinth: no .jar file for {}", slug))?;
+
+    file["url"].as_str()
+        .map(|s| s.to_string())
+        .ok_or_else(|| format!("Modrinth: no url field for {}", slug))
+}
+
 // ── mc_install ────────────────────────────────────────────────────────────────
 
 #[tauri::command]
@@ -303,10 +327,13 @@ async fn mc_install(app: AppHandle, state: State<'_, SharedMcState>) -> Result<(
         .map_err(|e| format!("Skript download: {}", e))?;
     emit_prog(&app, "Skript downloaded.", 58);
 
-    // ── 3. SkBee ──────────────────────────────────────────────────────────────
+    // ── 3. SkBee (Modrinth, fallback GitHub) ─────────────────────────────────
     emit_prog(&app, "Downloading SkBee...", 60);
-    let skbee_url = get_github_jar("ShaneBeee/SkBee").await
-        .unwrap_or_else(|_| "https://github.com/ShaneBeee/SkBee/releases/download/3.23.0/SkBee-3.23.0.jar".to_string());
+    let skbee_url = match get_modrinth_jar("skbee").await {
+        Ok(u) => u,
+        Err(_) => get_github_jar("ShaneBeee/SkBee").await
+            .unwrap_or_else(|_| "https://cdn.modrinth.com/data/Dl9gOGzN/versions/latest/SkBee.jar".to_string()),
+    };
     download_file(&skbee_url, &dir.join("plugins/SkBee.jar")).await
         .map_err(|e| format!("SkBee download: {}", e))?;
     emit_prog(&app, "SkBee downloaded.", 75);
