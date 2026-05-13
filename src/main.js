@@ -90,14 +90,7 @@ function welcomeHTML() {
     <div class="welcome">
       <div class="welcome-hero">
         <div class="welcome-logo">
-          <svg width="120" height="120" viewBox="0 0 120 120" fill="#3ddc84">
-            <path d="M60 4 L 64 50 L 116 60 L 64 70 L 60 116 L 56 70 L 4 60 L 56 50 Z"/>
-            <path d="M95 18 L 96.5 28 L 106 30 L 96.5 32 L 95 42 L 93.5 32 L 84 30 L 93.5 28 Z" opacity="0.75"/>
-            <path d="M22 90 L 23 96 L 29 97.5 L 23 99 L 22 105 L 21 99 L 15 97.5 L 21 96 Z" opacity="0.6"/>
-            <circle cx="100" cy="92" r="2.5" opacity="0.5"/>
-            <circle cx="20" cy="22" r="1.8" opacity="0.45"/>
-            <circle cx="80" cy="105" r="1.4" opacity="0.4"/>
-          </svg>
+          <img src="/src/assets/logo.png" width="120" height="120" style="object-fit:contain;display:block;" draggable="false"/>
         </div>
         <div>
           <div class="welcome-title">SkStudio</div>
@@ -645,10 +638,7 @@ function showAboutModal() {
     <div class="settings-backdrop"></div>
     <div class="about-window">
       <div class="about-logo">
-        <svg width="80" height="80" viewBox="0 0 120 120" fill="#3ddc84">
-          <path d="M60 4 L 64 50 L 116 60 L 64 70 L 60 116 L 56 70 L 4 60 L 56 50 Z"/>
-          <path d="M95 18 L 96.5 28 L 106 30 L 96.5 32 L 95 42 L 93.5 32 L 84 30 L 93.5 28 Z" opacity="0.75"/>
-        </svg>
+        <img src="/src/assets/logo.png" width="80" height="80" style="object-fit:contain;display:block;" draggable="false"/>
       </div>
       <h2>SkStudio</h2>
       <p class="about-version">Version 0.1.0</p>
